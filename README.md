@@ -1,18 +1,28 @@
-# Postagens Automáticas
+name: Automação de Postagens
 
-Este projeto é destinado à automação de postagens em blogs usando tendências do Google. Ele utiliza ferramentas como PyTrends e GitHub Actions para integração contínua.
+on:
+  schedule:
+    - cron: "0 9 * * *"  # Executa todos os dias às 9:00 AM UTC
+  workflow_dispatch:  # Permite disparar manualmente o fluxo de trabalho
 
-## Funcionalidades
-- Coleta de tendências do Google.
-- Geração de conteúdo automático.
-- Publicação em plataformas como o Blogger.
+jobs:
+  postagens_automáticas:
+    runs-on: ubuntu-latest
 
-## Requisitos
-- Python 3.8 ou superior.
-- Acesso ao Blogger API.
-- Conta no GitHub para configurar a automação.
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v2
 
-## Como usar
-1. Clone este repositório:
-   ```bash
-   git clone https://github.com/feconsultoria/postagens-autom-ticas.git
+    - name: Configurar Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'  # Você pode alterar a versão do Python conforme necessário
+
+    - name: Instalar dependências
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytrends requests
+
+    - name: Rodar script de postagens
+      run: |
+        python postagens_automáticas.py  # Se o seu script Python estiver nomeado assim

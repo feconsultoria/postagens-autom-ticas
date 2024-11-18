@@ -1,28 +1,50 @@
-name: Postagens Automáticas
+import os
+import time
+import requests
+from pytrends.request import TrendReq
+from datetime import datetime
 
-on:
-  push:
-    branches:
-      - main
+# Configurações do Blogger API
+BLOGGER_API_URL = 'https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts/'
+API_KEY = 'sua_chave_da_api_blogger'
+BLOG_ID = 'seu_id_do_blog'
 
-jobs:
-  postagens:
-    runs-on: ubuntu-latest
+# Inicializar o pytrends
+pytrends = TrendReq(hl='pt-BR', tz=360)
+
+# Função para obter as tendências do Google
+def obter_tendencias():
+    pytrends.build_payload(kw_list=[""], cat=0, timeframe="now 1-d", geo='BR', gprop='')
+    trending_searches_df = pytrends.trending_searches(pn='brazil')
+    tendencias = trending_searches_df.iloc[:, 0].tolist()  # Extrair as tendências mais recentes
+    return tendencias
+
+# Função para criar postagem no Blogger
+def criar_postagem(titulo, conteudo):
+    url = BLOGGER_API_URL.format(blog_id=BLOG_ID)
+    headers = {'Content-Type': 'application/json'}
     
-    steps:
-    - name: Checar o repositório
-      uses: actions/checkout@v2
+    post_data = {
+        'kind': 'blogger#post',
+        'title': titulo,
+        'content': conteudo
+    }
+    
+    response = requests.post(url, json=post_data, params={'key': API_KEY}, headers=headers)
+    
+    if response.status_code == 200:
+        print(f'Postagem "{titulo}" criada com sucesso!')
+    else:
+        print(f'Erro ao criar postagem: {response.status_code} - {response.text}')
 
-    - name: Configurar Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
+# Função principal para gerar e publicar postagens
+def rodar_automacao():
+    tendencias = obter_tendencias()  # Obter as tendências do Google
+    for trend in tendencias[:5]:  # Limitar a 5 tendências para postagens
+        titulo = f"Tendência do momento: {trend}"
+        conteudo = f"Confira a tendência mais quente do momento: {trend}!"
+        criar_postagem(titulo, conteudo)
+        time.sleep(5)  # Intervalo de 5 segundos entre as postagens (ajuste conforme necessário)
 
-    - name: Instalar dependências
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Rodar script de postagens
-      run: |
-        python postagens_automáticas.py
+if __name__ == '__main__':
+    rodar_automacao()

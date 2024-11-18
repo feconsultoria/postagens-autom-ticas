@@ -1,4 +1,4 @@
-name: Automação de Postagens
+name: Automacao_de_Postagens
 
 on:
   schedule:
@@ -16,7 +16,7 @@ jobs:
     - name: Configurar Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.8'  # Você pode alterar a versão do Python conforme necessário
+        python-version: '3.8'
 
     - name: Instalar dependências
       run: |

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:  # Permite disparar manualmente o fluxo de trabalho
 
 jobs:
-  postagens_automáticas:
+  postagens_automaticas:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +16,7 @@ jobs:
     - name: Configurar Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.8'
+        python-version: '3.8'  # Você pode alterar a versão do Python conforme necessário
 
     - name: Instalar dependências
       run: |

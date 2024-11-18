@@ -1,51 +1,37 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from pytrends.request import TrendReq
-import time
+name: Automação de Postagens
 
-# Configurações do Blogger
-EMAIL = "seu_email@gmail.com"  # Substitua pelo seu e-mail do Blogger
-SENHA = "sua_senha"           # Substitua pela sua senha
-BLOG_ID = "7906092018022196349"  # Substitua pelo ID do seu blog
+on:
+  schedule:
+    - cron: "*/5 * * * *"  # Executa a cada 5 minutos
+  workflow_dispatch:  # Permite disparar manualmente o fluxo de trabalho
 
-# Configurações do Google Trends
-pytrends = TrendReq(hl='pt-BR', tz=360)
+jobs:
+  postagens_automáticas:
+    runs-on: ubuntu-latest
 
-# Buscar as 5 tendências mais populares no Brasil
-pytrends.build_payload(kw_list=["brasil"])  # Ajuste a palavra-chave se necessário
-trends = pytrends.trending_searches(pn='brazil')  # Obtém as 5 tendências mais populares no Brasil
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v2
 
-# Obter as 5 primeiras tendências
-top_trends = trends.head(5).values.tolist()
+    - name: Configurar Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'  # Você pode alterar a versão do Python conforme necessário
 
-# Gerar título e conteúdo
-TITULO = f"Tendências Quentes no Brasil: {', '.join(top_trends)}"
-CONTEUDO = f"As principais tendências de hoje no Brasil incluem: {', '.join(top_trends)}. Confira mais sobre o que está acontecendo e aproveite para aprender sobre esses temas."
+    - name: Instalar dependências
+      run: |
+        python -m pip install --upgrade pip
+        pip install selenium pytrends
 
-# Configurar o navegador
-driver = webdriver.Chrome()  # Certifique-se de ter o driver do Chrome instalado
-driver.get("https://www.blogger.com/")
+    - name: Instalar dependências do Chrome e ChromeDriver
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y wget curl unzip
+        sudo apt-get install -y chromium-chromedriver
+        sudo apt-get install -y xvfb
+        sudo apt-get install -y libappindicator3-1 libindicator7
 
-# Login
-driver.find_element(By.ID, "identifierId").send_keys(EMAIL, Keys.RETURN)
-time.sleep(2)
-driver.find_element(By.NAME, "password").send_keys(SENHA, Keys.RETURN)
-time.sleep(5)
-
-# Criar novo post
-driver.get(f"https://www.blogger.com/blog/posts/{BLOG_ID}")  # Substitua pelo ID do seu blog
-time.sleep(5)
-
-# Adicionar título e conteúdo
-driver.find_element(By.CLASS_NAME, "blogger-create-button").click()
-time.sleep(2)
-driver.find_element(By.CLASS_NAME, "title-input").send_keys(TITULO)
-driver.find_element(By.CLASS_NAME, "content-input").send_keys(CONTEUDO)
-
-# Publicar
-driver.find_element(By.CLASS_NAME, "publish-button").click()
-time.sleep(5)
-
-# Fechar o navegador
-driver.quit()
+    - name: Rodar script de postagens
+      run: |
+        export DISPLAY=:99.0  # Configura a variável DISPLAY para Xvfb
+        python postagens_automáticas.py  # O script Python
